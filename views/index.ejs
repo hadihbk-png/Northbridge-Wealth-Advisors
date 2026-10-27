@@ -1,0 +1,117 @@
+<%- include('partials/header') %>
+
+<!-- Hero -->
+<section class="hero" id="top">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-xl-7">
+        <p class="eyebrow"><i class="bi bi-geo-alt me-1"></i><%= firm.area %></p>
+        <h1 class="hero-title"><%= firm.name %></h1>
+        <p class="hero-tagline"><%= firm.tagline %></p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <a href="/booking" class="btn btn-gold btn-lg">
+            <i class="bi bi-calendar-check me-2"></i>Book a consultation
+          </a>
+          <a href="#services" class="btn btn-outline-light btn-lg">Our services</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section class="section" id="services">
+  <div class="container">
+    <div class="section-heading text-center">
+      <p class="eyebrow">What we do</p>
+      <h2>Our Services</h2>
+      <p class="lead-muted">Practical, personal advice to help you plan with confidence.</p>
+    </div>
+    <div class="services-grid">
+      <% services.forEach(function (service) { %>
+        <article class="service-card">
+          <span class="service-icon" aria-hidden="true"><i class="bi <%= service.icon %>"></i></span>
+          <h3><%= service.title %></h3>
+          <p class="mb-0"><%= service.text %></p>
+        </article>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="section section-alt" id="about">
+  <div class="container">
+    <div class="row g-4 g-lg-5 align-items-center">
+      <div class="col-lg-6">
+        <p class="eyebrow">About us</p>
+        <h2>Independent advice, built on trust</h2>
+        <p>
+          <%= firm.name %> helps individuals and families in the UAE make clear, confident
+          decisions about their money. We take time to understand your goals, explain your options
+          in plain language, and build a plan that fits your life.
+        </p>
+        <p class="mb-0">
+          Our advisors meet clients at our office on <%= firm.area %> and by video call, and we
+          review your plan regularly as your circumstances change.
+        </p>
+      </div>
+      <div class="col-lg-6">
+        <div class="about-panel">
+          <ul class="about-points list-unstyled mb-4">
+            <li><i class="bi bi-check2-circle"></i>Advice that puts your interests first</li>
+            <li><i class="bi bi-check2-circle"></i>Clear fees, explained before you commit</li>
+            <li><i class="bi bi-check2-circle"></i>Regular reviews as your life changes</li>
+          </ul>
+          <div class="regulatory">
+            <i class="bi bi-patch-check-fill" aria-hidden="true"></i>
+            <span><%= firm.regulatory %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="section" id="contact">
+  <div class="container">
+    <div class="section-heading text-center">
+      <p class="eyebrow">Get in touch</p>
+      <h2>Contact</h2>
+      <p class="lead-muted">Book a consultation online, call us, or visit our office.</p>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-4">
+        <div class="contact-card h-100">
+          <span class="contact-icon" aria-hidden="true"><i class="bi bi-geo-alt"></i></span>
+          <h3>Address</h3>
+          <address class="mb-0"><%= firm.address %></address>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="contact-card h-100">
+          <span class="contact-icon" aria-hidden="true"><i class="bi bi-telephone"></i></span>
+          <h3>Phone</h3>
+          <p class="mb-3"><a href="tel:<%= firm.phone.replace(/\s/g, '') %>"><%= firm.phone %></a></p>
+          <a href="/booking" class="btn btn-gold">
+            <i class="bi bi-calendar-check me-2"></i>Book a consultation
+          </a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="contact-card h-100">
+          <span class="contact-icon" aria-hidden="true"><i class="bi bi-clock"></i></span>
+          <h3>Opening hours</h3>
+          <dl class="hours mb-0">
+            <% firm.hours.forEach(function (h) { %>
+              <div><dt><%= h.days %></dt><dd><%= h.time %></dd></div>
+            <% }); %>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

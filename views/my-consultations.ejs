@@ -1,0 +1,71 @@
+<%- include('partials/header') %>
+
+<section class="booking-hero">
+  <div class="container">
+    <p class="eyebrow">Client account</p>
+    <h1>My Consultations</h1>
+    <p class="lead-muted mb-0">Signed in as <%= currentUser.email %></p>
+  </div>
+</section>
+
+<section class="section booking-section">
+  <div class="container">
+    <div class="booking-card consult-list-card">
+      <% if (notice) { %>
+        <div class="alert <%= notice.type === 'success' ? 'alert-notice' : 'alert-booking' %>" role="status">
+          <i class="bi <%= notice.type === 'success' ? 'bi-check2-circle' : 'bi-exclamation-circle' %> me-2"></i><%= notice.text %>
+        </div>
+      <% } %>
+
+      <% if (!consultations.length) { %>
+        <div class="confirmed">
+          <span class="confirmed__icon" aria-hidden="true"><i class="bi bi-calendar2-plus"></i></span>
+          <p class="lead-muted">You have no consultations yet.</p>
+          <a href="/booking" class="btn btn-gold">Book a consultation</a>
+        </div>
+      <% } else { %>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <p class="mb-0 text-muted"><%= consultations.length %> consultation<%= consultations.length === 1 ? '' : 's' %>, newest first</p>
+          <a href="/booking" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg me-1"></i>Book another</a>
+        </div>
+
+        <ul class="consult-list list-unstyled mb-0">
+          <% consultations.forEach(function (c) { %>
+            <li class="consult-item status-<%= c.status.toLowerCase() %>">
+              <span class="consult-item__icon" aria-hidden="true"><i class="bi <%= c.serviceIcon %>"></i></span>
+              <div class="consult-item__body">
+                <div class="consult-item__top">
+                  <h2 class="consult-item__title"><%= c.serviceTitle %></h2>
+                  <span class="consult-status"><%= c.status %></span>
+                </div>
+                <p class="consult-item__when"><i class="bi bi-calendar3 me-1"></i><%= c.dateLabel %> · <%= c.timeLabel %> <span>(UAE time)</span></p>
+                <p class="consult-item__meta">
+                  With <%= c.advisorName %> · <%= c.meetingLabel %> · <span class="text-nowrap">Ref <%= c.reference %></span>
+                </p>
+                <% if (c.goal) { %><p class="consult-item__goal">“<%= c.goal %>”</p><% } %>
+              </div>
+              <% if (c.canCancel) { %>
+                <form method="post" action="/my-consultations/<%= c.id %>/cancel" class="consult-item__action"
+                      data-confirm="Cancel your <%= c.serviceTitle %> consultation on <%= c.dateLabel %>?">
+                  <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                </form>
+              <% } %>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Ask before cancelling; disable the button so a double click can't send it twice.
+  document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      if (!window.confirm(form.dataset.confirm)) { e.preventDefault(); return; }
+      form.querySelector('button').disabled = true;
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

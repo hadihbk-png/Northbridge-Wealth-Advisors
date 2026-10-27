@@ -1,0 +1,57 @@
+<%- include('partials/header') %>
+
+<%
+  const invalid = (f) => errors[f] ? ' is-invalid' : '';
+  const fieldError = (f) => errors[f] ? `<div class="field-error">${errors[f]}</div>` : '';
+%>
+
+<section class="booking-hero">
+  <div class="container">
+    <p class="eyebrow">Client account</p>
+    <h1>Create an account</h1>
+    <p class="lead-muted mb-0">Keep track of your consultations and cancel online if plans change.</p>
+  </div>
+</section>
+
+<section class="section booking-section">
+  <div class="container">
+    <div class="booking-card auth-card">
+      <% if (Object.keys(errors).length) { %>
+        <div class="alert alert-booking" role="alert"><i class="bi bi-exclamation-circle me-2"></i>Please check the highlighted details.</div>
+      <% } %>
+      <form method="post" action="/register" novalidate>
+        <input type="hidden" name="next" value="<%= next %>">
+        <div class="mb-3">
+          <label class="form-label" for="fullName">Full name</label>
+          <input class="form-control<%= invalid('fullName') %>" id="fullName" name="fullName" type="text" autocomplete="name"
+                 maxlength="80" required value="<%= values.fullName || '' %>">
+          <%- fieldError('fullName') %>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control<%= invalid('email') %>" id="email" name="email" type="email" autocomplete="email"
+                 maxlength="254" required value="<%= values.email || '' %>">
+          <div class="form-text">Use the email you book with. Your consultations are matched to it.</div>
+          <%- fieldError('email') %>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-control<%= invalid('password') %>" id="password" name="password" type="password"
+                 autocomplete="new-password" required>
+          <div class="form-text">At least 8 characters, with a letter and a number.</div>
+          <%- fieldError('password') %>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="confirmPassword">Confirm password</label>
+          <input class="form-control<%= invalid('confirmPassword') %>" id="confirmPassword" name="confirmPassword"
+                 type="password" autocomplete="new-password" required>
+          <%- fieldError('confirmPassword') %>
+        </div>
+        <button type="submit" class="btn btn-gold btn-lg w-100">Create account</button>
+      </form>
+      <p class="auth-switch">Already have an account? <a href="/login<%= next ? `?next=${encodeURIComponent(next)}` : '' %>">Log in</a></p>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

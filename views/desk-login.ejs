@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+
+<section class="booking-hero">
+  <div class="container">
+    <p class="eyebrow">Staff only</p>
+    <h1>Staff desk</h1>
+    <p class="lead-muted mb-0">Enter the staff password to see booked consultations.</p>
+  </div>
+</section>
+
+<section class="section booking-section">
+  <div class="container">
+    <div class="booking-card auth-card">
+      <% if (error) { %>
+        <div class="alert alert-booking" role="alert"><i class="bi bi-exclamation-circle me-2"></i><%= error %></div>
+      <% } %>
+      <form method="post" action="/desk/login" novalidate>
+        <div class="mb-4">
+          <label class="form-label" for="password">Staff password</label>
+          <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-gold btn-lg w-100">Open the desk</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

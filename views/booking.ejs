@@ -1,0 +1,326 @@
+<%- include('partials/header') %>
+
+<%
+  const err = (typeof errors !== 'undefined') ? errors : {};
+  const val = (typeof values !== 'undefined') ? values : {};
+  const invalid = (field) => err[field] ? ' is-invalid' : '';
+  const fieldError = (field) => err[field] ? `<div class="field-error" id="${field}-error">${err[field].replace(/&/g, '&amp;').replace(/</g, '&lt;')}</div>` : '';
+  const STEP_NAMES = ['Service', 'Advisor', 'Meeting', 'Your details'];
+  const HERO = {
+    form: ['Meet one of our advisors', 'Four short steps. It takes about a minute.'],
+    summary: ['Check your booking', `Please review the details below, then pay the ${deposit.label} deposit to secure your time.`],
+    confirmed: [mode === 'confirmed' ? `Thank you, ${booking.name.split(' ')[0]}` : '', 'Your deposit is paid and your consultation is booked.'],
+    'payment-incomplete': ['Payment not completed', 'Your consultation is not booked yet.'],
+    'payment-check-failed': ['We are checking your payment', 'Your consultation is not booked yet.'],
+    'paid-slot-taken': ['Payment received', 'We need to arrange a new time with you.'],
+    'payment-unknown': ['Booking not found', 'We could not find a booking for this payment.'],
+    'payment-unavailable': ['Online booking is unavailable', 'Payments cannot be taken right now.'],
+    'payment-error': ['Payment could not start', 'Your consultation has not been booked.'],
+    error: ['Sorry, something went wrong', 'Your booking was not completed.'],
+  }[mode];
+  const callUs = `<a href="tel:${firm.phone.replace(/\s/g, '')}">${firm.phone}</a>`;
+%>
+
+<section class="booking-hero">
+  <div class="container">
+    <p class="eyebrow">Book a consultation</p>
+    <h1><%= HERO[0] %></h1>
+    <p class="lead-muted mb-0"><%= HERO[1] %></p>
+  </div>
+</section>
+
+<section class="section booking-section">
+  <div class="container">
+    <div class="booking-card">
+
+    <% if (mode === 'form') { %>
+      <!-- Progress -->
+      <ol class="booking-progress" aria-label="Booking steps">
+        <% STEP_NAMES.forEach(function (name, i) { %>
+          <li data-progress="<%= i + 1 %>" class="<%= i + 1 === step ? 'is-current' : '' %>">
+            <span class="booking-progress__num"><%= i + 1 %></span>
+            <span class="booking-progress__label"><%= name %></span>
+          </li>
+        <% }); %>
+      </ol>
+
+      <% if (typeof notice !== 'undefined' && notice) { %>
+        <div class="alert alert-booking" role="status"><i class="bi bi-credit-card me-2"></i><%= notice %></div>
+      <% } %>
+      <% if (Object.keys(err).length) { %>
+        <div class="alert alert-booking" role="alert" id="error-summary" tabindex="-1">
+          <i class="bi bi-exclamation-circle me-2"></i>Please check the highlighted details below.
+        </div>
+      <% } %>
+
+      <form id="booking-form" method="post" action="/booking" novalidate data-start-step="<%= step %>"
+            data-today="<%= today.date %>" data-earliest="<%= today.earliestStart %>">
+
+        <!-- Step 1: service -->
+        <fieldset class="booking-step" data-step="1">
+          <legend class="step-legend"><span>Step 1 of 4</span>Which service would you like to discuss?</legend>
+          <div class="choice-grid choice-grid--2">
+            <% services.forEach(function (s) { %>
+              <label class="choice-card<%= invalid('service') %>">
+                <input type="radio" name="service" value="<%= s.id %>" required <%= val.service === s.id ? 'checked' : '' %>>
+                <span class="choice-card__icon" aria-hidden="true"><i class="bi <%= s.icon %>"></i></span>
+                <span class="choice-card__body">
+                  <span class="choice-card__title"><%= s.title %></span>
+                  <span class="choice-card__text"><%= s.text %></span>
+                </span>
+              </label>
+            <% }); %>
+          </div>
+          <%- fieldError('service') %>
+        </fieldset>
+
+        <!-- Step 2: advisor -->
+        <fieldset class="booking-step" data-step="2">
+          <legend class="step-legend"><span>Step 2 of 4</span>Choose your advisor</legend>
+          <p class="step-hint" id="advisor-hint">Each advisor specialises in one area.</p>
+          <div class="choice-grid choice-grid--2">
+            <% advisors.forEach(function (a) { %>
+              <label class="choice-card advisor-card<%= invalid('advisor') %>" data-services="<%= a.services.join(' ') %>">
+                <input type="radio" name="advisor" value="<%= a.id %>" required <%= val.advisor === a.id ? 'checked' : '' %>>
+                <span class="advisor-avatar" aria-hidden="true"><%= a.name.split(' ').map(function (p) { return p[0]; }).join('') %></span>
+                <span class="choice-card__body">
+                  <span class="choice-card__title"><%= a.name %><% if (a.credential) { %>, <%= a.credential %><% } %></span>
+                  <span class="choice-card__text"><%= a.role %></span>
+                  <span class="choice-card__meta"><i class="bi bi-translate me-1"></i><%= a.languages %></span>
+                </span>
+              </label>
+            <% }); %>
+          </div>
+          <%- fieldError('advisor') %>
+        </fieldset>
+
+        <!-- Step 3: meeting type, date, time -->
+        <fieldset class="booking-step" data-step="3">
+          <legend class="step-legend"><span>Step 3 of 4</span>How and when would you like to meet?</legend>
+
+          <h3 class="step-subhead">Meeting type</h3>
+          <div class="choice-grid choice-grid--2">
+            <% meetingTypes.forEach(function (m) { %>
+              <label class="choice-card<%= invalid('meeting') %>">
+                <input type="radio" name="meeting" value="<%= m.id %>" required <%= val.meeting === m.id ? 'checked' : '' %>>
+                <span class="choice-card__icon" aria-hidden="true"><i class="bi <%= m.icon %>"></i></span>
+                <span class="choice-card__body">
+                  <span class="choice-card__title"><%= m.label %></span>
+                  <span class="choice-card__text"><%= m.detail %></span>
+                </span>
+              </label>
+            <% }); %>
+          </div>
+          <%- fieldError('meeting') %>
+
+          <h3 class="step-subhead">Date <small>Monday to Friday</small></h3>
+          <div class="date-strip" role="radiogroup" aria-label="Date">
+            <% dates.forEach(function (d) { %>
+              <label class="date-chip<%= invalid('date') %>">
+                <input type="radio" name="date" value="<%= d.value %>" required <%= val.date === d.value ? 'checked' : '' %>>
+                <span class="date-chip__weekday"><%= d.isToday ? 'Today' : d.weekday %></span>
+                <span class="date-chip__day"><%= d.day %></span>
+                <span class="date-chip__month"><%= d.month %></span>
+              </label>
+            <% }); %>
+          </div>
+          <%- fieldError('date') %>
+
+          <h3 class="step-subhead">Time <small>45-minute consultation, UAE time</small></h3>
+          <div class="slot-grid" role="radiogroup" aria-label="Time">
+            <% slots.forEach(function (s) { %>
+              <label class="slot-chip<%= invalid('time') %>">
+                <input type="radio" name="time" value="<%= s.value %>" data-start="<%= s.start %>" required <%= val.time === s.value ? 'checked' : '' %>>
+                <span><%= s.label %></span>
+              </label>
+            <% }); %>
+          </div>
+          <p class="step-hint mt-2 d-none" id="today-note"><i class="bi bi-info-circle me-1"></i>Times earlier today are no longer available.</p>
+          <%- fieldError('time') %>
+        </fieldset>
+
+        <!-- Step 4: contact details -->
+        <fieldset class="booking-step" data-step="4">
+          <legend class="step-legend"><span>Step 4 of 4</span>Your details</legend>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="name">Full name</label>
+              <input class="form-control<%= invalid('name') %>" id="name" name="name" type="text" autocomplete="name"
+                     maxlength="80" required value="<%= val.name || '' %>">
+              <%- fieldError('name') %>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="phone">Phone</label>
+              <input class="form-control<%= invalid('phone') %>" id="phone" name="phone" type="tel" autocomplete="tel"
+                     inputmode="tel" maxlength="25" placeholder="+971 50 123 4567" required value="<%= val.phone || '' %>">
+              <%- fieldError('phone') %>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="email">Email</label>
+              <% if (currentUser) { %>
+                <input class="form-control" id="email" name="email" type="email" readonly
+                       value="<%= currentUser.email %>" aria-describedby="email-note">
+                <div class="form-text" id="email-note"><i class="bi bi-person-check me-1"></i>Your account email. This booking will appear in My Consultations.</div>
+              <% } else { %>
+                <input class="form-control<%= invalid('email') %>" id="email" name="email" type="email" autocomplete="email"
+                       maxlength="254" required value="<%= val.email || '' %>">
+                <div class="form-text"><a href="/login?next=/booking">Log in</a> to see and manage your bookings later.</div>
+              <% } %>
+              <%- fieldError('email') %>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="goal">Your goal <span class="optional">(optional, one line)</span></label>
+              <input class="form-control<%= invalid('goal') %>" id="goal" name="goal" type="text" maxlength="120"
+                     placeholder="e.g. Plan for retirement in 15 years" value="<%= val.goal || '' %>">
+              <%- fieldError('goal') %>
+            </div>
+          </div>
+          <p class="privacy-note">
+            <i class="bi bi-shield-lock me-1"></i>
+            We will never ask for account numbers, balances, income or your Emirates ID online.
+            Please don't include them here.
+          </p>
+        </fieldset>
+
+        <div class="booking-nav">
+          <button type="button" class="btn btn-outline-navy" data-nav="back"><i class="bi bi-arrow-left me-1"></i>Back</button>
+          <button type="button" class="btn btn-gold" data-nav="next">Next<i class="bi bi-arrow-right ms-1"></i></button>
+          <button type="submit" class="btn btn-gold" data-nav="submit">Review booking<i class="bi bi-arrow-right ms-1"></i></button>
+        </div>
+      </form>
+
+    <% } else if (mode === 'summary') { %>
+      <dl class="summary-list">
+        <div><dt>Service</dt><dd><%= booking.serviceTitle %></dd></div>
+        <div><dt>Advisor</dt><dd><%= booking.advisorName %><span><%= booking.advisorRole %></span></dd></div>
+        <div><dt>Meeting</dt><dd><%= booking.meetingLabel %><span><%= booking.meetingDetail %></span></dd></div>
+        <div><dt>Date</dt><dd><%= booking.dateLabel %></dd></div>
+        <div><dt>Time</dt><dd><%= booking.timeLabel %> <span>UAE time, 45 minutes</span></dd></div>
+        <div><dt>Name</dt><dd><%= booking.name %></dd></div>
+        <div><dt>Phone</dt><dd><%= booking.phone %></dd></div>
+        <div><dt>Email</dt><dd><%= booking.email %></dd></div>
+        <% if (booking.goal) { %><div><dt>Your goal</dt><dd><%= booking.goal %></dd></div><% } %>
+      </dl>
+
+      <div class="deposit-box">
+        <span class="deposit-box__icon" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
+        <div>
+          <p class="deposit-box__title">Deposit to secure your time: <strong><%= deposit.label %></strong></p>
+          <p class="deposit-box__text mb-0">
+            <%= deposit.description %> You'll pay securely on Stripe's checkout page; we never see your card details.
+            Your time is held for <%= 30 %> minutes while you pay.
+          </p>
+        </div>
+      </div>
+
+      <form method="post" action="/booking/confirm" class="summary-actions" id="confirm-form">
+        <% ['service', 'advisor', 'meeting', 'date', 'time', 'name', 'phone', 'email', 'goal'].forEach(function (f) { %>
+          <input type="hidden" name="<%= f %>" value="<%= booking[f] %>">
+        <% }); %>
+        <button type="submit" formaction="/booking/edit" class="btn btn-outline-navy">
+          <i class="bi bi-pencil me-1"></i>Change details
+        </button>
+        <button type="submit" class="btn btn-gold btn-lg" id="confirm-btn">
+          <i class="bi bi-lock me-1"></i>Confirm booking &amp; pay <%= deposit.label %>
+        </button>
+      </form>
+      <script>
+        // Prevent a double click from sending the booking twice.
+        document.getElementById('confirm-form').addEventListener('submit', function (e) {
+          if (e.submitter && e.submitter.id === 'confirm-btn') {
+            setTimeout(function () { e.submitter.disabled = true; e.submitter.textContent = 'Opening secure payment…'; }, 0);
+          }
+        });
+      </script>
+
+    <% } else if (mode === 'confirmed') { %>
+      <div class="confirmed">
+        <span class="confirmed__icon" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
+        <p class="confirmed__ref">Booking reference <strong><%= reference %></strong></p>
+        <span class="status-badge"><i class="bi bi-circle-fill me-1"></i><%= consultation.status %></span>
+      </div>
+
+      <dl class="summary-list">
+        <div><dt>Service</dt><dd><%= booking.serviceTitle %></dd></div>
+        <div><dt>Advisor</dt><dd><%= booking.advisorName %><span><%= booking.advisorRole %></span></dd></div>
+        <div><dt>Meeting</dt><dd><%= booking.meetingLabel %><span><%= booking.meetingDetail %></span></dd></div>
+        <div><dt>Date</dt><dd><%= booking.dateLabel %></dd></div>
+        <div><dt>Time</dt><dd><%= booking.timeLabel %> <span>UAE time, 45 minutes</span></dd></div>
+        <div><dt>Name</dt><dd><%= consultation.clientName %></dd></div>
+        <div><dt>Phone</dt><dd><%= consultation.clientPhone %></dd></div>
+        <div><dt>Email</dt><dd><%= consultation.clientEmail %></dd></div>
+        <% if (consultation.goal) { %><div><dt>Your goal</dt><dd><%= consultation.goal %></dd></div><% } %>
+        <div><dt>Deposit</dt><dd><%= deposit.label %> paid<span><%= deposit.description %></span></dd></div>
+      </dl>
+
+      <p class="lead-muted text-center">
+        Please keep your reference. A confirmation email is on its way to <strong><%= consultation.clientEmail %></strong>.
+        To change or cancel, call us on <%- callUs %>.
+      </p>
+      <div class="text-center">
+        <a href="/" class="btn btn-outline-navy mt-2"><i class="bi bi-house me-1"></i>Back to home</a>
+      </div>
+
+    <% } else if (mode === 'payment-incomplete' || mode === 'payment-check-failed') { %>
+      <div class="confirmed">
+        <span class="confirmed__icon confirmed__icon--warning" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
+        <% if (mode === 'payment-incomplete') { %>
+          <p class="lead-muted">
+            We have not received your <%= deposit.label %> deposit, so your consultation is <strong>not booked yet</strong>.
+            No money has been taken by us.
+          </p>
+        <% } else { %>
+          <p class="lead-muted">
+            We could not confirm your payment with Stripe just now. Please refresh this page in a moment.
+            Your consultation is <strong>not booked</strong> until the payment is confirmed.
+          </p>
+        <% } %>
+        <p class="mb-4"><strong><%= booking.serviceTitle %></strong> with <%= booking.advisorName %>, <%= booking.dateLabel %>, <%= booking.timeLabel %></p>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <% if (typeof checkoutUrl !== 'undefined' && checkoutUrl) { %>
+            <a href="<%= checkoutUrl %>" class="btn btn-gold"><i class="bi bi-lock me-1"></i>Complete payment</a>
+          <% } else if (mode === 'payment-check-failed') { %>
+            <a href="" class="btn btn-gold"><i class="bi bi-arrow-clockwise me-1"></i>Check again</a>
+          <% } %>
+          <a href="/booking" class="btn btn-outline-navy">Start a new booking</a>
+        </div>
+        <p class="small text-muted mt-3 mb-0">Questions? Call us on <%- callUs %>.</p>
+      </div>
+
+    <% } else if (mode === 'paid-slot-taken') { %>
+      <div class="confirmed">
+        <span class="confirmed__icon confirmed__icon--warning" aria-hidden="true"><i class="bi bi-telephone"></i></span>
+        <p class="lead-muted">
+          Your <%= deposit.label %> deposit was received, but the time you chose
+          (<%= booking.dateLabel %>, <%= booking.timeLabel %>) was booked by someone else while your payment was completing.
+          We will call you on <strong><%= booking.clientPhone %></strong> to arrange another time or refund your deposit.
+        </p>
+        <p class="mb-0">Reference <strong><%= booking.reference %></strong> · Call us on <%- callUs %></p>
+      </div>
+
+    <% } else { %>
+      <%
+        const MESSAGES = {
+          'payment-unknown': ['bi-search', 'This payment link does not match a booking. If you have paid, please call us with your Stripe receipt.'],
+          'payment-unavailable': ['bi-credit-card', `Online booking needs a ${deposit.label} deposit, and payments are not available right now. Nothing has been booked or charged.`],
+          'payment-error': ['bi-exclamation-triangle', 'We could not open the secure payment page, so nothing has been booked or charged. Please try again in a few minutes.'],
+          error: ['bi-exclamation-triangle', "We couldn't save your booking just now, so nothing has been booked. Please try again in a few minutes."],
+        };
+        const msg = MESSAGES[mode] || MESSAGES.error;
+      %>
+      <div class="confirmed">
+        <span class="confirmed__icon confirmed__icon--error" aria-hidden="true"><i class="bi <%= msg[0] %>"></i></span>
+        <p class="lead-muted"><%= msg[1] %> You can also call us on <%- callUs %>.</p>
+        <a href="/booking" class="btn btn-gold mt-2">Back to booking</a>
+      </div>
+    <% } %>
+
+    </div>
+  </div>
+</section>
+
+<% if (mode === 'form') { %>
+<script src="/js/booking.js" defer></script>
+<% } %>
+
+<%- include('partials/footer') %>

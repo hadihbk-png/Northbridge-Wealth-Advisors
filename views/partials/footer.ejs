@@ -1,0 +1,81 @@
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row gy-4 align-items-start">
+        <div class="col-md-6">
+          <a class="footer-brand" href="/">
+            <span class="brand-mark" aria-hidden="true"><i class="bi bi-compass"></i></span>
+            <%= firm.name %>
+          </a>
+          <p class="footer-muted mt-2 mb-0"><%= firm.tagline %>.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p class="mb-1"><i class="bi bi-geo-alt me-1"></i><%= firm.address %></p>
+          <p class="mb-0"><i class="bi bi-telephone me-1"></i><a href="tel:<%= firm.phone.replace(/\s/g, '') %>"><%= firm.phone %></a></p>
+        </div>
+      </div>
+
+      <hr class="footer-rule">
+
+      <p class="footer-disclaimer">Information on this site is general and is not personal financial advice.</p>
+      <p class="footer-credit mb-0">
+        <%= firm.name %> · built at <%= firm.builtAt %> · by <%= firm.builtBy %>
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function () {
+      var menu = document.getElementById('mainNav');
+      var navLinks = Array.prototype.slice.call(document.querySelectorAll('#mainNav .nav-link[href*="#"]'));
+      var sectionFor = function (link) { return document.getElementById(link.hash.slice(1)); };
+
+      // Section links: on mobile, close the menu first and then scroll, so the
+      // collapsing menu doesn't shift the page after the scroll position is set.
+      document.querySelectorAll('#mainNav a[href*="#"]').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          var target = document.getElementById(link.hash.slice(1));
+          if (!target || link.pathname !== window.location.pathname) return; // let the browser go to the home page
+          e.preventDefault();
+          var go = function () {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            history.replaceState(null, '', link.hash);
+          };
+          if (menu.classList.contains('show')) {
+            menu.addEventListener('hidden.bs.collapse', go, { once: true });
+            bootstrap.Collapse.getOrCreateInstance(menu).hide();
+          } else {
+            go();
+          }
+        });
+      });
+
+      // Highlight the link for the section currently in view.
+      var setActive = function () {
+        // Pages without these sections (e.g. /booking) highlight nothing.
+        if (!navLinks.some(sectionFor)) return;
+        var navBottom = document.querySelector('.site-nav').getBoundingClientRect().bottom;
+        var current = navLinks[0];
+        navLinks.forEach(function (link) {
+          var section = sectionFor(link);
+          if (section && section.getBoundingClientRect().top <= navBottom + 120) current = link;
+        });
+        // At the very bottom of the page the last section is always the one in view.
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+          current = navLinks[navLinks.length - 1];
+        }
+        navLinks.forEach(function (link) {
+          var on = link === current;
+          link.classList.toggle('active', on);
+          if (on) link.setAttribute('aria-current', 'true'); else link.removeAttribute('aria-current');
+        });
+      };
+      window.addEventListener('scroll', setActive, { passive: true });
+      window.addEventListener('resize', setActive);
+      setActive();
+    })();
+  </script>
+</body>
+</html>

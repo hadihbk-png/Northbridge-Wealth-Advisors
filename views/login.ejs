@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+
+<section class="booking-hero">
+  <div class="container">
+    <p class="eyebrow">Client account</p>
+    <h1>Log in</h1>
+    <p class="lead-muted mb-0">See and manage your consultations.</p>
+  </div>
+</section>
+
+<section class="section booking-section">
+  <div class="container">
+    <div class="booking-card auth-card">
+      <% if (errors.form) { %>
+        <div class="alert alert-booking" role="alert"><i class="bi bi-exclamation-circle me-2"></i><%= errors.form %></div>
+      <% } %>
+      <form method="post" action="/login" novalidate>
+        <input type="hidden" name="next" value="<%= next %>">
+        <div class="mb-3">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" id="email" name="email" type="email" autocomplete="email" required
+                 value="<%= values.email || '' %>" autofocus>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="password">Password</label>
+          <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-gold btn-lg w-100">Log in</button>
+      </form>
+      <p class="auth-switch">New here? <a href="/register<%= next ? `?next=${encodeURIComponent(next)}` : '' %>">Create an account</a></p>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

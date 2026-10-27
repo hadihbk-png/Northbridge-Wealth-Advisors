@@ -1,0 +1,95 @@
+<%- include('partials/header') %>
+
+<%
+  const fmt = (iso) => new Date(iso).toLocaleString('en-GB', {
+    timeZone: firm.timeZone, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+  });
+%>
+
+<section class="booking-hero">
+  <div class="container d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <p class="eyebrow">Staff only</p>
+      <h1>Staff desk</h1>
+      <p class="lead-muted mb-0">Booked consultations, earliest first.</p>
+    </div>
+    <form method="post" action="/desk/logout">
+      <button type="submit" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Leave desk</button>
+    </form>
+  </div>
+</section>
+
+<section class="section booking-section">
+  <div class="container">
+    <div class="booking-card desk-card">
+      <% if (notice) { %>
+        <div class="alert <%= notice.type === 'success' ? 'alert-notice' : 'alert-booking' %>" role="status">
+          <i class="bi <%= notice.type === 'success' ? 'bi-envelope-check' : 'bi-exclamation-circle' %> me-2"></i><%= notice.text %>
+        </div>
+      <% } %>
+
+      <% if (!consultations.length) { %>
+        <div class="confirmed">
+          <span class="confirmed__icon" aria-hidden="true"><i class="bi bi-calendar2-check"></i></span>
+          <p class="lead-muted mb-0">No booked consultations yet.</p>
+        </div>
+      <% } else { %>
+        <p class="text-muted mb-3"><%= consultations.length %> booked consultation<%= consultations.length === 1 ? '' : 's' %></p>
+        <div class="table-responsive">
+          <table class="table desk-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Client</th>
+                <th scope="col">Date &amp; time</th>
+                <th scope="col">Service</th>
+                <th scope="col">Advisor</th>
+                <th scope="col">Meeting</th>
+                <th scope="col" class="text-end">Reminder</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% consultations.forEach(function (c) { %>
+                <tr class="<%= c.isPast ? 'is-past' : '' %>">
+                  <td data-label="Client">
+                    <strong><%= c.clientName %></strong>
+                    <span class="desk-sub"><%= c.clientEmail %> · <%= c.reference %></span>
+                  </td>
+                  <td data-label="Date &amp; time">
+                    <%= c.dateLabel %>
+                    <span class="desk-sub"><%= c.timeLabel %> (UAE)<% if (c.isPast) { %> · <em>past</em><% } %></span>
+                  </td>
+                  <td data-label="Service"><%= c.serviceTitle %></td>
+                  <td data-label="Advisor"><%= c.advisorName %></td>
+                  <td data-label="Meeting"><%= c.meetingLabel %></td>
+                  <td data-label="Reminder" class="text-end">
+                    <form method="post" action="/desk/<%= c.id %>/remind" class="d-inline"
+                          data-confirm="Email a reminder to <%= c.clientName %> (<%= c.clientEmail %>)?">
+                      <button type="submit" class="btn btn-gold btn-sm"><i class="bi bi-envelope me-1"></i>Send reminder</button>
+                    </form>
+                    <% if (c.reminderSentAt) { %>
+                      <span class="desk-sub">Last sent <%= fmt(c.reminderSentAt) %></span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Confirm before emailing a client; disable the button so it can't be sent twice by a double click.
+  document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      if (!window.confirm(form.dataset.confirm)) { e.preventDefault(); return; }
+      var btn = form.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>
