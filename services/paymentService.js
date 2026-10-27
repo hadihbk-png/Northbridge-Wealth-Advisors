@@ -36,7 +36,8 @@ function stripe() {
 }
 
 function baseUrl() {
-  const value = process.env.BASE_URL;
+  // On Render, RENDER_EXTERNAL_URL is provided automatically (e.g. https://name.onrender.com).
+  const value = process.env.BASE_URL || process.env.RENDER_EXTERNAL_URL;
   if (!value) throw new PaymentsNotConfiguredError('BASE_URL is not set.');
   return value.replace(/\/+$/, '');
 }

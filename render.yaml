@@ -1,0 +1,45 @@
+# Render Blueprint for Northbridge Wealth Advisors.
+# Render runs the app as a normal Node.js server (node server.js) with a persistent
+# disk for the SQLite database, so bookings, accounts and logins survive deploys.
+# Deploy: render.com > New > Blueprint > choose this GitHub repository.
+services:
+  - type: web
+    name: northbridge-wealth-advisors
+    runtime: node
+    plan: starter            # a paid plan is required for a persistent disk
+    region: frankfurt        # closest Render region to the UAE (singapore is the other option)
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /
+    autoDeploy: true         # redeploys on every push to main
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "24"          # node:sqlite needs Node 22.13 or newer
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/advisor.db
+      - key: SESSION_SECRET
+        generateValue: true  # Render creates a long random value
+      - key: DESK_PASSWORD
+        generateValue: true  # view it in Render > Environment to log in to /desk
+      # Entered by you in the Render dashboard when you create the Blueprint (never committed):
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      # Optional: only needed with a custom domain. Otherwise the onrender.com address is used.
+      - key: BASE_URL
+        sync: false

@@ -17,5 +17,8 @@
     "nodemailer": "^10.2.1",
     "stripe": "^23.0.1"
   },
-  "private": true
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  }
 }
